@@ -221,7 +221,7 @@
             <br>
             Šv: {{ floor($holidayMinutes / 60) }}h {{ $holidayMinutes % 60}}min
             <br>
-            Viso: {{ floor(($workMinutes + $nightMinutes + $holidayMinutes) / 60) }}h {{ ($workMinutes + $nightMinutes + $holidayMinutes) % 60}}min
+            Viso: {{ floor(($workMinutes) / 60) }}h {{ ($workMinutes) % 60}}min
           </td>
           {{-- <td>{{ floor(($workMinutes - $nightMinutes) / 60) }}h {{ ($workMinutes - $nightMinutes) % 60}}min</td>
           <td>{{ floor($nightMinutes / 60) }}h {{ $nightMinutes % 60 }}min</td> --}}
