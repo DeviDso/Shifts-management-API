@@ -30,6 +30,7 @@ class PdfController extends Controller
       $data['selectedMonth'] = $r->input('selectedMonth');
       $data['settingNightStarts'] = $r->input('night_starts');
       $data['settingNightEnds'] = $r->input('night_ends');
+      $data['holidays'] = $r->input('holidays');
 
       $pdf = \PDF::loadView('pdf', $data);
       $pdf->setPaper('A4', 'landscape');

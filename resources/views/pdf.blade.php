@@ -97,7 +97,7 @@
         @for($i = 1; $i <= $daysInMonth; $i++)
           <th>{{ $i }}</th>
         @endfor
-        <th></th>
+        <th width="5%"></th>
         {{-- <th>Paprastos</th>
         <th>Naktinės</th> --}}
         {{-- <th>Šventinės</th> --}}
@@ -191,12 +191,21 @@
                   $dayStart = \Carbon\Carbon::parse($day->start, $timezone);
                   $dayEnd = \Carbon\Carbon::parse($day->end, $timezone);
 
+                  //Counting 1st day if extended
                   if(\Carbon\Carbon::create($dayStart->year, $dayStart->month, $dayStart->day, $dayStart->hour, $dayStart->minute)->between($holidayStart, $holidayEnd)){
                     if($day->type == 'work'){
                       if($i == $dayStart->day && $i == $dayEnd->day){
                         $holidayMinutes += $dayStart->diffInMinutes($dayEnd);
-                      }  else if($i == $startFormated->day &&  $i != $endFormated->day){
+                      } else if($i == $dayStart->day &&  $i != $dayEnd->day){
                         $holidayMinutes += $dayStart->diffInMinutes($holidayEnd);
+                      }
+                    }
+                  }
+                  //Counting 2nd day if extended
+                  if(\Carbon\Carbon::create($dayEnd->year, $dayEnd->month, $dayEnd->day, $dayEnd->hour, $dayEnd->minute)->between($holidayStart, $holidayEnd)){
+                    if($day->type == 'work'){
+                      if($i != $dayStart->day && $i == $dayEnd->day){
+                        $holidayMinutes += $dayEnd->diffInMinutes($holidayStart);
                       }
                     }
                   }
@@ -205,12 +214,12 @@
               echo '</td>';
             }
           @endphp
-          <td style="text-align: left">
-            Paprastos: {{ floor(($workMinutes - $nightMinutes) / 60) }}h {{ ($workMinutes - $nightMinutes) % 60}}min
+          <td style="text-align: left; font-size: 4px">
+            Pap: {{ floor(($workMinutes - $nightMinutes) / 60) }}h {{ ($workMinutes - $nightMinutes) % 60}}min
             <br>
-            Naktinės: {{ floor($nightMinutes / 60) }}h {{ $nightMinutes % 60}}min
+            Nakt: {{ floor($nightMinutes / 60) }}h {{ $nightMinutes % 60}}min
             <br>
-            Šventinės: {{ floor($holidayMinutes / 60) }}h {{ $holidayMinutes % 60}}min
+            Šv: {{ floor($holidayMinutes / 60) }}h {{ $holidayMinutes % 60}}min
             <br>
             Viso: {{ floor(($workMinutes + $nightMinutes + $holidayMinutes) / 60) }}h {{ ($workMinutes + $nightMinutes + $holidayMinutes) % 60}}min
           </td>
