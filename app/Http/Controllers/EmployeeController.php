@@ -33,8 +33,13 @@ class EmployeeController extends Controller
         ]);
 
         if($r->input('schedule_id') == 'private'){
+          if(strlen($r->input('private_schedule_name')) > 0){
+            $ps = ' (' . $r->input('private_schedule_name') . ')';
+          } else {
+            $ps = '';
+          }
           $schedule = Schedule::create([
-            'name' => $r->input('name') . ' ' . $r->input('surname') . ' (' . $r->input('private_schedule_name') . ')',
+            'name' => $r->input('name') . ' ' . $r->input('surname') . $ps,
             'max_hours' => 0,
             'max_minutes' => 0,
             'private' => true
@@ -64,8 +69,13 @@ class EmployeeController extends Controller
       $employee = Employee::findOrFail($id);
 
       if($r->input('schedule_id') == 'private'){
+        if(strlen($r->input('private_schedule_name')) > 0){
+          $ps = ' (' . $r->input('private_schedule_name') . ')';
+        } else {
+          $ps = '';
+        }
         $schedule = Schedule::create([
-          'name' => $r->input('name') . ' ' . $r->input('surname') . ' (' . $r->input('private_schedule_name') . ')',
+          'name' => $r->input('name') . ' ' . $r->input('surname') . $ps,
           'max_hours' => 0,
           'max_minutes' => 0,
           'private' => true

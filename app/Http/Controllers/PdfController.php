@@ -38,8 +38,11 @@ class PdfController extends Controller
     }
 
     public function monthView(Request $r){
-      $data['employees'] = Employee::with(['schedule', 'schedule.data'])->findMany([1,2]);
-      $data['selectedMonth'] = '2018-08-01';
+      $data['employees'] = Employee::with(['schedule', 'schedule.data'])->findMany([5,6,7,8,9,10,11,12,13,14,15]);
+      $data['holidays'] = ['2018-09-03'];
+      $data['selectedMonth'] = '2018-09-01';
+      $data['settingNightStarts'] = '20:00';
+      $data['settingNightEnds'] = '06:00';
 
       return view('pdf', $data);
     }

@@ -3,7 +3,7 @@
   setlocale(LC_TIME, 'lt_LT.UTF-8');
 @endphp
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="lt" dir="ltr">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
@@ -39,7 +39,7 @@
         border: solid 1px #333;
       }
       table td{
-        font-size: 4px;
+        font-size: 4.5px;
         text-align: center;
         padding: 0;
       }
@@ -54,6 +54,7 @@
       .break{
         background: #cecece;
         color: #333;
+        margin-top: 1.5px;
       }
       .vacation{
         background: #FF851B;
@@ -89,14 +90,16 @@
     <h2>Patvirtinta</h2>
     <h1>Senolių namai</h1>
     <h3>Darbo laiko grafikas</h3>
+    <h3>{{ $current->format('Y-m') }}</h3>
     <table>
       <tr class="heading">
-        <th>Darbuotojas(-a)</th>
+        <th width="8%">Darbuotojas(-a)</th>
         @for($i = 1; $i <= $daysInMonth; $i++)
           <th>{{ $i }}</th>
         @endfor
-        <th>Paprastos</th>
-        <th>Naktinės</th>
+        <th></th>
+        {{-- <th>Paprastos</th>
+        <th>Naktinės</th> --}}
         {{-- <th>Šventinės</th> --}}
       </tr>
       @foreach ($employees as $key => $employee)
@@ -116,12 +119,17 @@
         }
         @endphp
         <tr>
-          <td><label class="employee">{{ $employee->name . ' ' . $employee->surname }}</label></td>
+          <td>
+            <label class="employee">{{ $employee->name . ' ' . $employee->surname }}</label>
+            ({{ $employee->position->name }})
+            {{-- <div style="width: 100%; height: 0.5px; background: #998; display: block"></div> --}}
+
+          </td>
           @php
             for($i = 1; $i <= $daysInMonth; $i++){
               echo '<td>';
               if($extDay){
-                echo '<label class="work">00:00-' . $endFormated->hour . ':' . $endFormated->minute . '0</label><br>';
+                echo '<label class="work">00:00-' . substr($endFormated, 11, 5) . '</label><br>';
                 $extDay = false;
               }
               foreach($days as $index => $day){
@@ -148,17 +156,13 @@
                         $nightMinutes += $nightStartsFormated->diffInMinutes($endFormated);
                       }
                     }
-                    //Testing
-                    // echo '<label class="vacation">'. $nightStartsFormated .'</label><br>';
-                    //
-                    echo '<label class="work">' . $startFormated->hour . ':' . $startFormated->minute . '-' . $endFormated->hour . ':' . $endFormated->minute . '0</label><br>';
+                    echo '<label class="work">' . substr($startFormated, 11, 5) . '-' . substr($endFormated, 11, 5) . '</label><br>';
 
                   } else if ($day->type == 'break'){
                     $workMinutes -= $startFormated->diffInMinutes($endFormated);
-                    echo '<label class="break">' . $startFormated->hour . ':' . $startFormated->minute . '-' . $endFormated->hour . ':' . $endFormated->minute . '0</label><br>';
+                    echo '<label class="break">' . substr($startFormated, 11, 5) . '-' . substr($endFormated, 11, 5) . '</label><br>';
                   }
                 } else if($i == $startFormated->day &&  $i != $endFormated->day){
-                  // echo $day->type;
                   if($day->type == 'vacation'){
                     echo '<label class="vacation">A</label><br>';
                     $totalVacations++;
@@ -172,20 +176,46 @@
                       $nightMinutes += $nightStartsFormated->diffInMinutes($endFormated);
                     }
 
-                    echo '<label class="work">' . $startFormated->hour . ':' . $startFormated->minute . '-' . '00:00</label><br>';
+                    echo '<label class="work">' . substr($startFormated, 11, 5) . '-' . '00:00</label><br>';
                     array_push($extDayData, $day);
                     $extDay = true;
                   }  else if ($day->type == 'break'){
                     $workMinutes -= $startFormated->diffInMinutes($endFormated);
-                    echo '<label class="break">' . $startFormated->hour . ':' . $startFormated->minute . '-' . $endFormated->hour . ':' . $endFormated->minute . '0</label><br>';
+                    echo '<label class="break">' . substr($startFormated, 11, 5) . '-' . substr($endFormated, 11, 5) . '</label><br>';
+                  }
+                }
+                foreach($holidays as $holiday){
+                  $holidayStart = \Carbon\Carbon::parse($holiday . ' 00:00', $timezone);
+                  $holidayEnd = \Carbon\Carbon::parse($holiday . ' 24:00', $timezone);
+
+                  $dayStart = \Carbon\Carbon::parse($day->start, $timezone);
+                  $dayEnd = \Carbon\Carbon::parse($day->end, $timezone);
+
+                  if(\Carbon\Carbon::create($dayStart->year, $dayStart->month, $dayStart->day, $dayStart->hour, $dayStart->minute)->between($holidayStart, $holidayEnd)){
+                    if($day->type == 'work'){
+                      if($i == $dayStart->day && $i == $dayEnd->day){
+                        $holidayMinutes += $dayStart->diffInMinutes($dayEnd);
+                      }  else if($i == $startFormated->day &&  $i != $endFormated->day){
+                        $holidayMinutes += $dayStart->diffInMinutes($holidayEnd);
+                      }
+                    }
                   }
                 }
               }
               echo '</td>';
             }
           @endphp
-          <td>{{ floor(($workMinutes - $nightMinutes) / 60) }}h {{ ($workMinutes - $nightMinutes) % 60}}min</td>
-          <td>{{ floor($nightMinutes / 60) }}h {{ $nightMinutes % 60 }}min</td>
+          <td style="text-align: left">
+            Paprastos: {{ floor(($workMinutes - $nightMinutes) / 60) }}h {{ ($workMinutes - $nightMinutes) % 60}}min
+            <br>
+            Naktinės: {{ floor($nightMinutes / 60) }}h {{ $nightMinutes % 60}}min
+            <br>
+            Šventinės: {{ floor($holidayMinutes / 60) }}h {{ $holidayMinutes % 60}}min
+            <br>
+            Viso: {{ floor(($workMinutes + $nightMinutes + $holidayMinutes) / 60) }}h {{ ($workMinutes + $nightMinutes + $holidayMinutes) % 60}}min
+          </td>
+          {{-- <td>{{ floor(($workMinutes - $nightMinutes) / 60) }}h {{ ($workMinutes - $nightMinutes) % 60}}min</td>
+          <td>{{ floor($nightMinutes / 60) }}h {{ $nightMinutes % 60 }}min</td> --}}
           {{-- <td>123h 30min</td> --}}
         </tr>
       @endforeach

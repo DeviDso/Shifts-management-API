@@ -31,9 +31,9 @@ class CorsMiddleware
 
         $user = User::first();
 
-        if($request->header('API-KEY') != $user->auth){
-          return;
-        }
+        // if($request->header('API-KEY') != $user->auth){
+        //   return;
+        // }
 
         $response = $next($request);
         foreach($headers as $key => $value)

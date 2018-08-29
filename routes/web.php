@@ -15,14 +15,6 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
-$router->get('test', function(){
-
-  $data['schedule'] = \App\Schedule::with('data')->find(3);
-  $pdf = \PDF::loadView('test', $data);
-  $pdf->setPaper('A4', 'landscape');
-  return $pdf->stream('invoice.pdf');
-});
-
 $router->get('pdf', ['uses' => 'PdfController@monthView']);
 
 // $router->get('pdf', ['uses' => 'PdfController@index']);
